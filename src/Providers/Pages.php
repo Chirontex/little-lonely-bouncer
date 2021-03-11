@@ -314,10 +314,11 @@ class Pages
         if ($this->wpdb->insert(
             $this->wpdb->prefix.$this->table,
             [
+                'page_id' => $page_id,
                 'key' => $key,
                 'value' => $value
             ],
-            ['%s', '%s']
+            ['%d', '%s', '%s']
         ) === false) {
 
             $error = ErrorsList::pages(-2);

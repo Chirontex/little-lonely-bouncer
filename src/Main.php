@@ -34,6 +34,9 @@ final class Main
             $this->admin_file
         ) !== false) {
 
+            if (isset($_POST['llb-page-add-uri']) &&
+                isset($_POST['llb-page-add-passwords'])) $this->adminPageAdd();
+
             $this->adminPageRevive();
 
         }
@@ -136,6 +139,56 @@ final class Main
                     return $this->pages_body;
 
                 });
+
+            }
+
+        });
+
+    }
+
+    private function adminPageAdd() : void
+    {
+
+        add_action('plugins_loaded', function() {
+
+            if (wp_verify_nonce(
+                $_POST['llb-pages-wpnp'],
+                'llb-page-add'
+            ) === false) $this->adminNotice(
+                'danger',
+                'Произошла ошибка отправки формы. Попробуйте ещё раз.'
+            );
+            else {
+
+                $uri = trim($_POST['llb-page-add-uri'], '/');
+                $passwords = $_POST['llb-page-add-passwords'];
+
+                $pages_provider = new Pages($this->wpdb);
+
+                try {
+
+                    $page_id = $pages_provider->pageSet($uri);
+
+                    $pages_provider->valueAdd(
+                        $page_id,
+                        'passwords',
+                        $passwords
+                    );
+
+                } catch (PagesException $e) {
+
+                    $this->adminNotice(
+                        'danger',
+                        'Ошибка при добавлении защиты на страницу. '.
+                        $e->getCode().': "'.$e->getMessage().'"'
+                    );
+
+                }
+
+                if (!isset($e)) $this->adminNotice(
+                    'success',
+                    'Защита на страницу успешно добавлена!'
+                );
 
             }
 
