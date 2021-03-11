@@ -63,16 +63,36 @@ final class Main
 
             wp_enqueue_style(
                 'bootstrap-min',
-                'https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css',
+                (file_exists($this->path.'css/bootstrap.min.css') ?
+                    $this->url.'css/bootstrap.min.css' :
+                    'https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css'
+                ),
+                [],
+                '5.0.0-beta2'
+            );
+
+            wp_enqueue_style(
+                'llb-admin',
+                $this->url.'css/admin.css',
+                [],
+                '1.0.0'
+            );
+
+            wp_enqueue_script(
+                'bootstrap-bundle-min',
+                (file_exists($this->path.'js/bootstrap.bundle.min.js') ?
+                    $this->url.'js/bootstrap.min.js' :
+                    'https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js'
+                ),
                 [],
                 '5.0.0-beta2'
             );
 
             wp_enqueue_script(
-                'bootstrap-bundle-min',
-                'https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js',
+                'llb-admin',
+                $this->url.'js/admin.js',
                 [],
-                '5.0.0-beta2'
+                '1.0.0'
             );
 
         });
@@ -101,9 +121,9 @@ final class Main
 
 ?>
 <tr id="llb-page-<?= $page_id ?>">
-    <td><?= $page_id ?></td>
-    <td id="llb-page-uri-<?= $page_id ?>"><?= htmlspecialchars($page_values['page_uri']) ?></td>
-    <td id="llb-page-passwords-<?= $page_id ?>"><?= htmlspecialchars($passwords) ?></td>
+    <td class="text-center"><?= $page_id ?></td>
+    <td id="llb-page-uri-<?= $page_id ?>" class="text-center"><?= htmlspecialchars($page_values['page_uri']) ?></td>
+    <td id="llb-page-passwords-<?= $page_id ?>" class="text-center"><?= htmlspecialchars($passwords) ?></td>
 </tr>
 <?php
 
