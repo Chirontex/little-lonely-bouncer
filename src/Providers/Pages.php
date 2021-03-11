@@ -158,6 +158,37 @@ class Pages
     }
 
     /**
+     * Get all pages.
+     * 
+     * @return array
+     * 2-level associative array with pages IDs as a keys on the first level.
+     */
+    public function getAllPages() : array
+    {
+
+        $select = $this->wpdb->get_results(
+            "SELECT *
+                FROM `".$this->wpdb->prefix.$this->table."`",
+            ARRAY_A
+        );
+
+        $result = [];
+
+        if (!empty($select)) {
+
+            foreach ($select as $row) {
+
+                $result[$row['page_id']][$row['key']] = $row['value'];
+
+            }
+
+        }
+
+        return $result;
+
+    }
+
+    /**
      * Set the page.
      * 
      * @param string $uri
@@ -215,20 +246,16 @@ class Pages
     }
 
     /**
-     * Add the value.
+     * Remove the page with all its metadata.
      * 
      * @param int $page_id
      * Page ID cannot be lesser than 1.
-     * 
-     * @param string $key
-     * 
-     * @param string $value
      * 
      * @return void
      * 
      * @throws LittleLonelyBouncer\Exceptions\PagesException
      */
-    public function valueAdd(int $page_id, string $key, string $value) : void
+    public function pageRemove(int $page_id) : void
     {
 
         if ($page_id < 1) {
@@ -239,12 +266,46 @@ class Pages
 
         }
 
+        $this->wpdb->delete(
+            $this->wpdb->prefix.$this->table,
+            ['page_id' => $page_id],
+            ['%d']
+        );
+
+    }
+
+    /**
+     * Add the value.
+     * 
+     * @param int $page_id
+     * Page ID cannot be lesser than 1.
+     * 
+     * @param string $key
+     * Key cannot be empty.
+     * 
+     * @param string $value
+     * Value cannot be empty.
+     * 
+     * @return void
+     * 
+     * @throws LittleLonelyBouncer\Exceptions\PagesException
+     */
+    public function valueAdd(int $page_id, string $key, string $value) : void
+    {
+
         $key = trim($key);
         $value = trim($value);
 
-        if ($key === 'page_uri') {
+        $error_code = 0;
 
-            $error = ErrorsList::pages(-7);
+        if ($page_id < 1) $error_code = -3;
+        elseif (empty($key)) $error_code = -9;
+        elseif ($key === 'page_uri') $error_code = -7;
+        elseif (empty($value)) $error_code = -10;
+
+        if ($error_code !== 0) {
+
+            $error = ErrorsList::pages($error_code);
 
             throw new PagesException($error['message'], $error['code']);
 
@@ -267,6 +328,105 @@ class Pages
             );
 
         }
+
+    }
+
+    /**
+     * Update the value.
+     * 
+     * @param int $page_id
+     * Page ID cannot be lesser than 1.
+     * 
+     * @param string $key
+     * Key cannot be empty.
+     * 
+     * @param string $value
+     * Value cannot be empty.
+     * 
+     * @return void
+     * 
+     * @throws LittleLonelyBouncer\Exceptions\PagesException
+     */
+    public function valueUpdate(int $page_id, string $key, string $value) : void
+    {
+
+        $key = trim($key);
+        $value = trim($value);
+
+        $error_code = 0;
+
+        if ($page_id < 1) $error_code = -3;
+        elseif (empty($key)) $error_code = -9;
+        elseif ($key === 'page_uri') $error_code = -7;
+        elseif (empty($value)) $error_code = -10;
+
+        if ($error_code !== 0) {
+
+            $error = ErrorsList::pages($error_code);
+
+            throw new PagesException($error['message'], $error['code']);
+
+        }
+
+        if ($this->wpdb->update(
+            $this->wpdb->prefix.$this->table,
+            ['value' => $value],
+            [
+                'page_id' => $page_id,
+                'key' => $key
+            ],
+            ['%s'],
+            ['%d', '%s']
+        ) === false) {
+
+            $error = ErrorsList::pages(-8);
+
+            throw new PagesException($error['message'], $error['code']);
+
+        }
+
+    }
+
+    /**
+     * Delete the value.
+     * 
+     * @param int $page_id
+     * Page ID cannot be lesser than 1.
+     * 
+     * @param string $key
+     * Key cannot be empty.
+     * 
+     * @return void
+     * 
+     * @throws LittleLonelyBouncer\Exceptions\PagesException
+     */
+    public function valueDelete(int $page_id, string $key) : void
+    {
+
+        $key = trim($key);
+
+        $error_code = 0;
+
+        if ($page_id < 1) $error_code = -3;
+        elseif (empty($key)) $error_code = -9;
+        elseif ($key === 'page_uri') $error_code = -7;
+
+        if ($error_code !== 0) {
+
+            $error = ErrorsList::pages($error_code);
+
+            throw new PagesException($error['message'], $error['code']);
+
+        }
+
+        $this->wpdb->delete(
+            $this->wpdb->prefix.$this->table,
+            [
+                'page_id' => $page_id,
+                'key' => $key
+            ],
+            ['%d', '%s']
+        );
 
     }
 

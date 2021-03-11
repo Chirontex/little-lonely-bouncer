@@ -26,7 +26,10 @@ class ErrorsList
             '-4' => 'Page not exist in the table.',
             '-5' => 'Page URI cannot be empty.',
             '-6' => 'Page addition failure.',
-            '-7' => 'Page cannot be added by this way.'
+            '-7' => 'Invalid method to working with pages.',
+            '-8' => 'Value updating failure.',
+            '-9' => 'Key cannot be empty.',
+            '-10' => 'Value cannot be empty.'
         ];
 
         $result = [];
