@@ -17,6 +17,7 @@ final class Main
     private $admin_notice;
     private $pages_body;
     private $protection_check_fail = '';
+    private $page_data;
 
     public function __construct(string $path, string $url)
     {
@@ -259,9 +260,9 @@ final class Main
 
         $pages_provider = new Pages($this->wpdb);
 
-        $page = $pages_provider->pageGetByUri($uri);
+        $this->page_data = $pages_provider->pageGetByUri($uri);
 
-        if (!empty($page)) {
+        if (!empty($this->page_data)) {
 
             add_action('wp_enqueue_scripts', function() {
 
@@ -281,52 +282,69 @@ final class Main
 
             });
 
-            // save e-mail to cookies here
+            add_action('plugins_loaded', function() {
 
-            $protect = true;
+                $protect = true;
 
-            if (isset($_COOKIE['llb-page-'.$page['page_id']])) {
+                if (isset($_POST['llb-protection-email'])) {
 
-                $passwords = explode(',', $page['passwords']);
+                    if (wp_verify_nonce(
+                        $_POST['llb-protection-wpnp'],
+                        'llb-protection'
+                    ) === false) $this->protection_check_fail = 'Произошла ошибка при отправке формы. Попробуйте ещё раз.';
+                    else setcookie(
+                        'llb-page-'.$this->page_data['page_id'],
+                        trim($_POST['llb-protection-email']),
+                        0,
+                        '/'
+                    );
 
-                $passwords = array_map(function($value) {
+                }
 
-                    return trim($value);
+                if (isset($_COOKIE['llb-page-'.$this->page_data['page_id']])) {
 
-                }, $passwords);
+                    $passwords = explode(',', $this->page_data['passwords']);
 
-                if (array_search(
-                    $_COOKIE['llb-page-'.$page['page_id']],
-                    $passwords
-                ) === false) {
+                    $passwords = array_map(function($value) {
 
-                    ob_start();
+                        return trim($value);
 
-?>
-<p class="text-red">Участник с данным e-mail не найден, либо e-mail указан неверно.</p>
-<?php
+                    }, $passwords);
 
-                    $this->protection_check_fail = ob_get_clean();
+                    if (array_search(
+                        $_COOKIE['llb-page-'.$this->page_data['page_id']],
+                        $passwords
+                    ) === false) $this->protection_check_fail = 'Участник с данным e-mail не найден, либо e-mail указан неверно.';
+                    else $protect = false;
 
-                } else $protect = false;
+                }
 
-            }
+                if ($protect) {
 
-            if ($protect) {
+                    add_filter('the_content', function() {
 
-                add_filter('the_content', function() {
-
-                    ob_start();
+                        ob_start();
 
 ?>
 <div class="block-centered-limited">
     <h4 class="text-centered">Подтвердите ваше присутствие на вебинаре</h4>
     <p>Пожалуйста, введите e-mail, который вы указывали при регистрации на данный вебинар как участник.</p>
-    <?= $this->protection_check_fail ?>
+<?php
+
+                        if (!empty($this->protection_check_fail)) {
+                        
+?>
+    <p class="text-red"><?= $this->protection_check_fail ?></p>
+<?php
+
+                        }
+
+?>
     <form action="" method="post">
         <div class="margin-bottom-1">
             <input type="text" id="llb-protection-email" name="llb-protection-email" placeholder="Ваш e-mail участника" oninput="protectionFormSubmitCheck();">
         </div>
+        <?php wp_nonce_field('llb-protection', 'llb-protection-wpnp') ?>
         <div class="margin-bottom-1">
             <button type="submit" id="llb-protection-submit" class="button button-primary" disabled="true">Подтвердить</button>
         </div>
@@ -334,11 +352,13 @@ final class Main
 </div>
 <?php
 
-                    return ob_get_clean();
+                        return ob_get_clean();
 
-                }, 1000000000);
+                    }, 1000000000);
 
-            }
+                }
+
+            });
 
         }
 
