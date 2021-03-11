@@ -292,12 +292,18 @@ final class Main
                         $_POST['llb-protection-wpnp'],
                         'llb-protection'
                     ) === false) $this->protection_check_fail = 'Произошла ошибка при отправке формы. Попробуйте ещё раз.';
-                    else setcookie(
-                        'llb-page-'.$this->page_data['page_id'],
-                        trim($_POST['llb-protection-email']),
-                        0,
-                        '/'
-                    );
+                    else {
+                        
+                        setcookie(
+                            'llb-page-'.$this->page_data['page_id'],
+                            trim($_POST['llb-protection-email']),
+                            0,
+                            '/'
+                        );
+
+                        $_COOKIE['llb-page-'.$this->page_data['page_id']] = trim($_POST['llb-protection-email']);
+                
+                    }
 
                 }
 
@@ -345,7 +351,7 @@ final class Main
             <input type="text" id="llb-protection-email" name="llb-protection-email" placeholder="Ваш e-mail участника" oninput="protectionFormSubmitCheck();">
         </div>
         <?php wp_nonce_field('llb-protection', 'llb-protection-wpnp') ?>
-        <div class="margin-bottom-1">
+        <div class="margin-bottom-1 text-centered">
             <button type="submit" id="llb-protection-submit" class="button button-primary" disabled="true">Подтвердить</button>
         </div>
     </form>
