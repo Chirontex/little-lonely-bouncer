@@ -34,7 +34,7 @@ class Pages
     {
 
         if ($this->wpdb->query(
-            "CREATE TABLE `".$this->wpdb->prefix.$this->table."` (
+            "CREATE TABLE IF NOT EXISTS `".$this->wpdb->prefix.$this->table."` (
                 `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
                 `page_id` BIGINT UNSIGNED NOT NULL,
                 `key` VARCHAR(255) NOT NULL,
