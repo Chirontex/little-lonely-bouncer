@@ -16,6 +16,7 @@ final class Main
     private $admin_file = 'little-lonely-bouncer-admin.php';
     private $admin_notice;
     private $pages_body;
+    private $protection_check_fail = '';
 
     public function __construct(string $path, string $url)
     {
@@ -40,6 +41,8 @@ final class Main
             $this->adminPageRevive();
 
         }
+
+        $this->pageProtectionCheck();
 
     }
 
@@ -160,7 +163,16 @@ final class Main
             );
             else {
 
-                $uri = trim($_POST['llb-page-add-uri'], '/');
+                $uri = $_POST['llb-page-add-uri'];
+
+                if (strpos($uri, '?') !== false) $uri = substr(
+                    $uri,
+                    0,
+                    strpos($uri, '?')
+                );
+
+                if ($uri !== '/') $uri = trim($uri, '/');
+
                 $passwords = $_POST['llb-page-add-passwords'];
 
                 $pages_provider = new Pages($this->wpdb);
@@ -229,6 +241,106 @@ final class Main
             echo $prev_notices.ob_get_clean();
 
         });
+
+    }
+
+    private function pageProtectionCheck() : void
+    {
+
+        $uri = $_SERVER['REQUEST_URI'];
+
+        if (strpos($uri, '?') !== false) $uri = substr(
+            $uri,
+            0,
+            strpos($uri, '?')
+        );
+
+        if ($uri !== '/') $uri = trim($uri, '/');
+
+        $pages_provider = new Pages($this->wpdb);
+
+        $page = $pages_provider->pageGetByUri($uri);
+
+        if (!empty($page)) {
+
+            add_action('wp_enqueue_scripts', function() {
+
+                wp_enqueue_style(
+                    'llb-protection',
+                    $this->url.'css/protection.css',
+                    [],
+                    '1.0.0'
+                );
+
+                wp_enqueue_script(
+                    'llb-protection',
+                    $this->url.'js/protection.js',
+                    [],
+                    '1.0.0'
+                );
+
+            });
+
+            // save e-mail to cookies here
+
+            $protect = true;
+
+            if (isset($_COOKIE['llb-page-'.$page['page_id']])) {
+
+                $passwords = explode(',', $page['passwords']);
+
+                $passwords = array_map(function($value) {
+
+                    return trim($value);
+
+                }, $passwords);
+
+                if (array_search(
+                    $_COOKIE['llb-page-'.$page['page_id']],
+                    $passwords
+                ) === false) {
+
+                    ob_start();
+
+?>
+<p class="text-red">Участник с данным e-mail не найден, либо e-mail указан неверно.</p>
+<?php
+
+                    $this->protection_check_fail = ob_get_clean();
+
+                } else $protect = false;
+
+            }
+
+            if ($protect) {
+
+                add_filter('the_content', function() {
+
+                    ob_start();
+
+?>
+<div class="block-centered-limited">
+    <h4 class="text-centered">Подтвердите ваше присутствие на вебинаре</h4>
+    <p>Пожалуйста, введите e-mail, который вы указывали при регистрации на данный вебинар как участник.</p>
+    <?= $this->protection_check_fail ?>
+    <form action="" method="post">
+        <div class="margin-bottom-1">
+            <input type="text" id="llb-protection-email" name="llb-protection-email" placeholder="Ваш e-mail участника" oninput="protectionFormSubmitCheck();">
+        </div>
+        <div class="margin-bottom-1">
+            <button type="submit" id="llb-protection-submit" class="button button-primary" disabled="true">Подтвердить</button>
+        </div>
+    </form>
+</div>
+<?php
+
+                    return ob_get_clean();
+
+                }, 1000000000);
+
+            }
+
+        }
 
     }
 
