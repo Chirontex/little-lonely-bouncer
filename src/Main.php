@@ -122,7 +122,7 @@ final class Main
 
                         $passwords = explode(', ', $passwords);
                         $passwords = array_slice($passwords, 0, 10);
-                        $passwords = implode(', ', $passwords);
+                        $passwords = implode(', ', $passwords).'...';
 
                     }
 
