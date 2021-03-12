@@ -47,7 +47,7 @@ final class Main
 
     }
 
-    private function adminMenuInit() : void
+    private function adminMenuInit()
     {
 
         add_action('admin_menu', function() {
@@ -63,7 +63,7 @@ final class Main
 
     }
 
-    private function adminPageRevive() : void
+    private function adminPageRevive()
     {
 
         add_action('admin_enqueue_scripts', function() {
@@ -150,7 +150,7 @@ final class Main
 
     }
 
-    private function adminPageAdd() : void
+    private function adminPageAdd()
     {
 
         add_action('plugins_loaded', function() {
@@ -219,7 +219,7 @@ final class Main
      * 
      * @return void
      */
-    private function adminNotice(string $type, string $text) : void
+    private function adminNotice(string $type, string $text)
     {
 
         if ($type === 'danger') $type = 'error';
@@ -245,7 +245,7 @@ final class Main
 
     }
 
-    private function pageProtectionCheck() : void
+    private function pageProtectionCheck()
     {
 
         $uri = $_SERVER['REQUEST_URI'];

@@ -30,7 +30,7 @@ class Pages
      * 
      * @throws LittleLonelyBouncer\Exceptions\PagesException
      */
-    public function createTable() : void
+    public function createTable()
     {
 
         if ($this->wpdb->query(
@@ -255,7 +255,7 @@ class Pages
      * 
      * @throws LittleLonelyBouncer\Exceptions\PagesException
      */
-    public function pageRemove(int $page_id) : void
+    public function pageRemove(int $page_id)
     {
 
         if ($page_id < 1) {
@@ -290,7 +290,7 @@ class Pages
      * 
      * @throws LittleLonelyBouncer\Exceptions\PagesException
      */
-    public function valueAdd(int $page_id, string $key, string $value) : void
+    public function valueAdd(int $page_id, string $key, string $value)
     {
 
         $key = trim($key);
@@ -348,7 +348,7 @@ class Pages
      * 
      * @throws LittleLonelyBouncer\Exceptions\PagesException
      */
-    public function valueUpdate(int $page_id, string $key, string $value) : void
+    public function valueUpdate(int $page_id, string $key, string $value)
     {
 
         $key = trim($key);
@@ -401,7 +401,7 @@ class Pages
      * 
      * @throws LittleLonelyBouncer\Exceptions\PagesException
      */
-    public function valueDelete(int $page_id, string $key) : void
+    public function valueDelete(int $page_id, string $key)
     {
 
         $key = trim($key);
